@@ -30,8 +30,6 @@ python demo.py --camera
 python demo.py --image path/to/image.jpg
 ```
 
-That's it. If you just want to use it, you're done. Keep reading for training and advanced usage.
-
 ---
 
 ## Installation
@@ -52,8 +50,6 @@ pip install -r requirements.txt
 ## Usage
 
 ### Demo (Inference Only)
-
-The fastest way to test the model:
 
 **Webcam:**
 ```bash
@@ -107,10 +103,14 @@ Prepare your dataset by cropping faces:
 python data_prep.py --orig_dir /path/to/dataset_root --crop_dir Cropped_Dataset
 ```
 
+![Data preparation overview](assets/data_prep.png)
+
 **Dataset requirements:**
 - Image files (`.jpg` or `.png`)
 - Bounding box files: `image.jpg` → `image_BB.txt` (format: `x y w h`)
 - Label JSON files: `metas/labels/train_label.json` and `metas/labels/test_label.json`
+
+![Data preparation overview](assets/data_prep2.png)
 
 **Options:**
 ```bash
