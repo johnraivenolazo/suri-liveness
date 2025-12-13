@@ -1,3 +1,5 @@
+"""Data sampling infrastructure."""
+
 from __future__ import annotations
 
 from typing import List
@@ -11,4 +13,6 @@ def make_weighted_sampler(labels: List[int]) -> torch.utils.data.WeightedRandomS
     counts = np.clip(counts, 1, None)
     class_weights = 1.0 / counts
     sample_weights = [float(class_weights[l]) for l in labels]
-    return torch.utils.data.WeightedRandomSampler(sample_weights, len(sample_weights), replacement=True)
+    return torch.utils.data.WeightedRandomSampler(
+        sample_weights, len(sample_weights), replacement=True
+    )

@@ -1,8 +1,10 @@
+"""Data loading infrastructure."""
+
 from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Tuple
 
 import pandas as pd
 import torch
@@ -10,7 +12,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from labels import LabelSpec
+from src.core.labels import LabelSpec
 
 
 @dataclass(frozen=True)
@@ -91,12 +93,18 @@ def build_transforms(image_size: int) -> Tuple[Any, Any]:
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.8, 1.1)),
             transforms.RandomPerspective(distortion_scale=0.15, p=0.3),
-            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.05),
+            transforms.ColorJitter(
+                brightness=0.3, contrast=0.3, saturation=0.3, hue=0.05
+            ),
             transforms.RandomAutocontrast(p=0.2),
             transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.5)),
             transforms.ToTensor(),
             transforms.Lambda(
-                lambda x: x + (torch.randn_like(x) * 0.02) if torch.rand(1).item() < 0.3 else x
+                lambda x: (
+                    x + (torch.randn_like(x) * 0.02)
+                    if torch.rand(1).item() < 0.3
+                    else x
+                )
             ),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
             transforms.RandomErasing(p=0.15, scale=(0.02, 0.10)),
@@ -105,7 +113,10 @@ def build_transforms(image_size: int) -> Tuple[Any, Any]:
 
     val_transform = transforms.Compose(
         [
-            transforms.Resize((image_size, image_size), interpolation=transforms.InterpolationMode.LANCZOS),
+            transforms.Resize(
+                (image_size, image_size),
+                interpolation=transforms.InterpolationMode.LANCZOS,
+            ),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ]

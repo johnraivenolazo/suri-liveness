@@ -1,3 +1,5 @@
+"""Domain models: Model configuration and creation."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -34,7 +36,9 @@ def _replace_classifier_head(model: nn.Module, num_classes: int) -> None:
     raise ValueError("Could not locate classifier head on model")
 
 
-def create_model(cfg: ModelConfig, *, device: Optional[torch.device] = None) -> nn.Module:
+def create_model(
+    cfg: ModelConfig, *, device: Optional[torch.device] = None
+) -> nn.Module:
     model = timm.create_model(cfg.model_name, pretrained=cfg.pretrained)
     _replace_classifier_head(model, cfg.num_classes)
 

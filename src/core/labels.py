@@ -1,8 +1,9 @@
+"""Domain entities: LabelSpec and related logic."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Union
-
+from typing import Any, Mapping, Optional, Sequence, Union
 
 LabelValue = Union[int, str]
 
@@ -26,7 +27,9 @@ class LabelSpec:
             try:
                 return int(raw_value)
             except Exception as e:  # pragma: no cover
-                raise ValueError(f"Could not convert label value to int: {raw_value!r}") from e
+                raise ValueError(
+                    f"Could not convert label value to int: {raw_value!r}"
+                ) from e
 
         key: LabelValue
         if isinstance(raw_value, (int, str)):
@@ -48,7 +51,9 @@ class LabelSpec:
         raise ValueError(f"Unmapped label value: {raw_value!r}")
 
 
-def infer_label_spec(columns: Sequence[Any], *, preferred: Optional[Union[int, str]] = None) -> LabelSpec:
+def infer_label_spec(
+    columns: Sequence[Any], *, preferred: Optional[Union[int, str]] = None
+) -> LabelSpec:
     """Infer a reasonable LabelSpec from a dataframe's columns.
 
     - If preferred is provided and present, use it.

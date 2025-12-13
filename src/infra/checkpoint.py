@@ -1,3 +1,5 @@
+"""Model checkpointing infrastructure."""
+
 from __future__ import annotations
 
 import glob
@@ -29,7 +31,9 @@ def save_state(
         "best_metric": best_metric,
         "model_state_dict": model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
-        "scheduler_state_dict": scheduler.state_dict() if scheduler is not None else None,
+        "scheduler_state_dict": (
+            scheduler.state_dict() if scheduler is not None else None
+        ),
     }
     torch.save(payload, path)
 
@@ -46,13 +50,20 @@ def load_state(
 
     model.load_state_dict(state["model_state_dict"], strict=True)
 
-    if optimizer is not None and "optimizer_state_dict" in state and state["optimizer_state_dict"] is not None:
+    if (
+        optimizer is not None
+        and "optimizer_state_dict" in state
+        and state["optimizer_state_dict"] is not None
+    ):
         optimizer.load_state_dict(state["optimizer_state_dict"])
 
     if scheduler is not None and state.get("scheduler_state_dict") is not None:
         scheduler.load_state_dict(state["scheduler_state_dict"])
 
-    return TrainState(epoch=int(state.get("epoch", 0)), best_metric=float(state.get("best_metric", 0.0)))
+    return TrainState(
+        epoch=int(state.get("epoch", 0)),
+        best_metric=float(state.get("best_metric", 0.0)),
+    )
 
 
 def find_epoch_checkpoints(save_dir: str) -> list[str]:

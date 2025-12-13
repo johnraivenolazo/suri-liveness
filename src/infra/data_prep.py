@@ -1,10 +1,12 @@
+"""Data preparation infrastructure: Crop and resize face images."""
+
 from __future__ import annotations
 
 import argparse
 import os
 import shutil
 from multiprocessing import Pool, cpu_count
-from typing import Iterable, Tuple
+from typing import Tuple
 
 import cv2
 import pandas as pd

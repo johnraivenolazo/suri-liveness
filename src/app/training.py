@@ -1,7 +1,9 @@
+"""Training use cases: Model training and evaluation."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 import torch

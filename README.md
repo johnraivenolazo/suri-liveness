@@ -19,8 +19,32 @@ A face anti-spoof (liveness) classifier originally implemented in [Suri](https:/
 ## Key features
 
 - **Backbone**: MobileNetV4 (feature extractor) with a 3-class classifier head
-- **Export**: `src/to_onnx.py` exports a `.pth` checkpoint to a `.onnx` file
-- **Dataset prep**: `src/data_prep.py` crops faces using bounding boxes and produces a fixed-size dataset
+- **Clean Architecture**: Organized codebase following clean architecture principles
+- **Export**: `to_onnx.py` exports a `.pth` checkpoint to a `.onnx` file
+- **Dataset prep**: `data_prep.py` crops faces using bounding boxes and produces a fixed-size dataset
+
+## Project Structure
+
+The codebase follows clean architecture principles with clear separation of concerns:
+
+```
+src/
+├── core/                # Core business logic and entities
+│   ├── labels.py        # LabelSpec and label handling
+│   └── models.py        # Model configuration and creation
+├── app/                 # Use cases and business logic
+│   ├── inference.py     # Face detection and antispoof inference
+│   └── training.py      # Model training and evaluation
+├── infra/               # External dependencies and implementations
+│   ├── data.py          # Data loading and transforms
+│   ├── preprocess.py    # Image preprocessing utilities
+│   ├── checkpoint.py    # Model checkpoint management
+│   ├── sampler.py       # Data sampling strategies
+│   ├── data_prep.py     # Dataset preparation
+│   └── export_onnx.py   # ONNX model export
+└── cli/                 # Command-line scripts
+    └── train.py         # Training CLI script
+```
 
 ---
 
@@ -46,7 +70,7 @@ The pretrained model achieves 99% recall on live (real) faces. The model was tra
 
 ### Data preparation
 
-Use `src/data_prep.py` to crop faces and resize them to a fixed square size (default: 224x224).
+Use `data_prep.py` to crop faces and resize them to a fixed square size (default: 224x224).
 
 ![Data preparation overview](assets/data_prep.png)
 
@@ -70,22 +94,19 @@ Choose a folder where the cropped images will be written (it will be created as 
 Step 3: Run the script
 
 ```bash
-cd src
-python data_prep.py --orig_dir /path/to/dataset_root --crop_dir ../Cropped_Dataset
+python data_prep.py --orig_dir /path/to/dataset_root --crop_dir Cropped_Dataset
 ```
 
 Step 4 (optional): Change size and crop expansion
 
 ```bash
-cd src
-python data_prep.py --orig_dir /path/to/dataset_root --crop_dir ../Cropped_Dataset --size 224 --bbox_inc 1.5
+python data_prep.py --orig_dir /path/to/dataset_root --crop_dir Cropped_Dataset --size 224 --bbox_inc 1.5
 ```
 
 Step 5 (optional): Filter by label type codes (if the labels include them)
 
 ```bash
-cd src
-python data_prep.py --orig_dir /path/to/dataset_root --crop_dir ../Cropped_Dataset --spoof_types 0 1 2 3 7 8 9
+python data_prep.py --orig_dir /path/to/dataset_root --crop_dir Cropped_Dataset --spoof_types 0 1 2 3 7 8 9
 ```
 
 Step 6: Verify the output
@@ -95,16 +116,10 @@ Step 6: Verify the output
 
 ### Training
 
-Step 1: Change directory to `src`
+Run training from the project root:
 
 ```bash
-cd src
-```
-
-Step 2: Run training
-
-```bash
-python train.py --data-root ../Cropped_Dataset --save-dir ../models
+python train.py --data-root Cropped_Dataset --save-dir models
 ```
 
 The defaults expect:
@@ -117,8 +132,7 @@ The defaults expect:
 Convert a PyTorch checkpoint to ONNX:
 
 ```bash
-cd src
-python to_onnx.py --input ../model.pth --output ../model.onnx
+python to_onnx.py --input model.pth --output model.onnx
 ```
 
 ### Demo

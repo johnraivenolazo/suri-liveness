@@ -1,24 +1,24 @@
+"""Training CLI script."""
+
 from __future__ import annotations
 
 import argparse
 import json
 import os
-from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
 from torch.utils.data import DataLoader
 
-from checkpointing import load_state, save_state
-from data import JsonImageDataset, build_transforms
-from engine import evaluate, train_one_epoch
-from labels import LabelSpec, infer_label_spec
-from model import ModelConfig, create_model, freeze_backbone
-from sampler import make_weighted_sampler
+from src.app.training import evaluate, train_one_epoch
+from src.core.labels import LabelSpec, infer_label_spec
+from src.core.models import ModelConfig, create_model, freeze_backbone
+from src.infra.checkpoint import load_state, save_state
+from src.infra.data import JsonImageDataset, build_transforms
+from src.infra.sampler import make_weighted_sampler
 
 
 def _parse_comma_floats(value: str) -> list[float]:
@@ -49,12 +49,22 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--val-json", default=None, help="Path to validation label JSON")
 
     p.add_argument("--label-col", default=None, help="Label column name or index")
-    p.add_argument("--label-map-json", default=None, help="JSON file mapping raw labels to class ids")
-    p.add_argument("--strip-prefix", default=None, help="Optional path prefix to strip from JSON index")
+    p.add_argument(
+        "--label-map-json",
+        default=None,
+        help="JSON file mapping raw labels to class ids",
+    )
+    p.add_argument(
+        "--strip-prefix",
+        default=None,
+        help="Optional path prefix to strip from JSON index",
+    )
 
     p.add_argument("--model-name", default="mobilenetv4_conv_small.e2400_r224_in1k")
     p.add_argument("--num-classes", type=int, default=3)
-    p.add_argument("--pretrained", action="store_true", help="Use ImageNet pretrained backbone")
+    p.add_argument(
+        "--pretrained", action="store_true", help="Use ImageNet pretrained backbone"
+    )
 
     p.add_argument("--image-size", type=int, default=224)
     p.add_argument("--batch-size", type=int, default=64)
@@ -64,14 +74,26 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--weight-decay", type=float, default=1e-4)
 
-    p.add_argument("--class-weights", default=None, help="Comma-separated weights, e.g. 1,2,4")
+    p.add_argument(
+        "--class-weights", default=None, help="Comma-separated weights, e.g. 1,2,4"
+    )
 
-    p.add_argument("--weighted-sampler", action="store_true", help="Use class-balanced sampling")
-    p.add_argument("--no-weighted-sampler", action="store_true", help="Disable class-balanced sampling")
+    p.add_argument(
+        "--weighted-sampler", action="store_true", help="Use class-balanced sampling"
+    )
+    p.add_argument(
+        "--no-weighted-sampler",
+        action="store_true",
+        help="Disable class-balanced sampling",
+    )
 
     p.add_argument("--save-dir", default="./models")
-    p.add_argument("--resume", default=None, help="Path to a saved training state (.pth)")
-    p.add_argument("--freeze-backbone", action="store_true", help="Train only the classifier head")
+    p.add_argument(
+        "--resume", default=None, help="Path to a saved training state (.pth)"
+    )
+    p.add_argument(
+        "--freeze-backbone", action="store_true", help="Train only the classifier head"
+    )
 
     return p
 
@@ -102,7 +124,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     preferred_col = _resolve_label_col(args.label_col)
     label_spec = infer_label_spec(meta_df.columns, preferred=preferred_col)
     if args.label_map_json:
-        label_spec = LabelSpec(label_column=label_spec.label_column, raw_to_class=_load_label_map_json(args.label_map_json))
+        label_spec = LabelSpec(
+            label_column=label_spec.label_column,
+            raw_to_class=_load_label_map_json(args.label_map_json),
+        )
 
     train_tf, val_tf = build_transforms(args.image_size)
 
@@ -154,7 +179,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
 
     model = create_model(
-        ModelConfig(model_name=args.model_name, num_classes=args.num_classes, pretrained=args.pretrained),
+        ModelConfig(
+            model_name=args.model_name,
+            num_classes=args.num_classes,
+            pretrained=args.pretrained,
+        ),
         device=device,
     )
 
@@ -163,7 +192,9 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     class_weights = None
     if args.class_weights:
-        w = torch.tensor(_parse_comma_floats(args.class_weights), dtype=torch.float32, device=device)
+        w = torch.tensor(
+            _parse_comma_floats(args.class_weights), dtype=torch.float32, device=device
+        )
         if w.numel() != args.num_classes:
             raise ValueError("--class-weights length must match --num-classes")
         class_weights = w
@@ -171,14 +202,22 @@ def main(argv: Optional[list[str]] = None) -> int:
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     trainable_params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = optim.AdamW(trainable_params, lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = optim.AdamW(
+        trainable_params, lr=args.lr, weight_decay=args.weight_decay
+    )
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
     start_epoch = 1
     best_acc = 0.0
 
     if args.resume:
-        state = load_state(path=args.resume, model=model, optimizer=optimizer, scheduler=scheduler, map_location=str(device))
+        state = load_state(
+            path=args.resume,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            map_location=str(device),
+        )
         start_epoch = int(state.epoch) + 1
         best_acc = float(state.best_metric)
 
@@ -231,7 +270,9 @@ def main(argv: Optional[list[str]] = None) -> int:
             best_path = os.path.join(args.save_dir, "best.pth")
             torch.save(model.state_dict(), best_path)
 
-            epoch_path = os.path.join(args.save_dir, f"epoch{epoch}_metric{best_acc:.2f}.pth")
+            epoch_path = os.path.join(
+                args.save_dir, f"epoch{epoch}_metric{best_acc:.2f}.pth"
+            )
             torch.save(model.state_dict(), epoch_path)
 
         torch.save(model.state_dict(), os.path.join(args.save_dir, "last.pth"))

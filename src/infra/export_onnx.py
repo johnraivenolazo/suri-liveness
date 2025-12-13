@@ -1,3 +1,5 @@
+"""ONNX export infrastructure."""
+
 from __future__ import annotations
 
 import argparse
@@ -27,7 +29,14 @@ def _replace_classifier_head(model: torch.nn.Module, num_classes: int) -> None:
     raise ValueError("Could not locate classifier head on model")
 
 
-def export_onnx(*, input_path: Path, output_path: Path, model_name: str, num_classes: int, image_size: int) -> None:
+def export_onnx(
+    *,
+    input_path: Path,
+    output_path: Path,
+    model_name: str,
+    num_classes: int,
+    image_size: int,
+) -> None:
     if not input_path.exists():
         raise FileNotFoundError(f"PyTorch checkpoint not found: {input_path}")
 
@@ -57,8 +66,12 @@ def export_onnx(*, input_path: Path, output_path: Path, model_name: str, num_cla
 
 def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Export PyTorch checkpoint to ONNX")
-    p.add_argument("--input", "-i", required=True, help="Path to input checkpoint (.pth)")
-    p.add_argument("--output", "-o", required=True, help="Path to output ONNX file (.onnx)")
+    p.add_argument(
+        "--input", "-i", required=True, help="Path to input checkpoint (.pth)"
+    )
+    p.add_argument(
+        "--output", "-o", required=True, help="Path to output ONNX file (.onnx)"
+    )
     p.add_argument("--model-name", default="mobilenetv4_conv_small.e2400_r224_in1k")
     p.add_argument("--num-classes", type=int, default=3)
     p.add_argument("--image-size", type=int, default=224)
