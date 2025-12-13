@@ -12,46 +12,139 @@
 
 ![Face Anti-Spoofing Header](assets/header.png)
 
-A face anti-spoof (liveness) classifier originally implemented in [Suri](https://github.com/johnraivenolazo/suri) and kept here as a standalone training/export repo. It predicts three classes: **real**, **photo attack**, and **video attack**.
+A face anti-spoof (liveness) classifier that predicts three classes: **real**, **photo attack**, and **video attack**. Originally implemented in [Suri](https://github.com/johnraivenolazo/suri) and kept here as a standalone training/export repo.
 
 ---
 
-## Key features
+## Quick Start
 
-- **Backbone**: MobileNetV4 (feature extractor) with a 3-class classifier head
-- **Clean Architecture**: Organized codebase following clean architecture principles
-- **Export**: `to_onnx.py` exports a `.pth` checkpoint to a `.onnx` file
-- **Dataset prep**: `data_prep.py` crops faces using bounding boxes and produces a fixed-size dataset
+**Run the demo with webcam:**
 
-## Project Structure
-
-The codebase follows clean architecture principles with clear separation of concerns:
-
+```bash
+python demo.py --camera
 ```
-src/
-├── core/                # Core business logic and entities
-│   ├── labels.py        # LabelSpec and label handling
-│   └── models.py        # Model configuration and creation
-├── app/                 # Use cases and business logic
-│   ├── inference.py     # Face detection and antispoof inference
-│   └── training.py      # Model training and evaluation
-├── infra/               # External dependencies and implementations
-│   ├── data.py          # Data loading and transforms
-│   ├── preprocess.py    # Image preprocessing utilities
-│   ├── checkpoint.py    # Model checkpoint management
-│   ├── sampler.py       # Data sampling strategies
-│   ├── data_prep.py     # Dataset preparation
-│   └── export_onnx.py   # ONNX model export
-└── cli/                 # Command-line scripts
-    └── train.py         # Training CLI script
+
+**Run the demo with an image:**
+
+```bash
+python demo.py --image path/to/image.jpg
+```
+
+That's it. If you just want to use it, you're done. Keep reading for training and advanced usage.
+
+---
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+**Requirements:**
+- Python 3.8+
+- PyTorch 2.0+
+- OpenCV
+- ONNX Runtime
+- See `requirements.txt` for full list
+
+---
+
+## Usage
+
+### Demo (Inference Only)
+
+The fastest way to test the model:
+
+**Webcam:**
+```bash
+python demo.py --camera
+```
+
+**Single image:**
+```bash
+python demo.py --image path/to/image.jpg
+```
+
+**Custom models:**
+```bash
+python demo.py --image image.jpg \
+  --face-model models/face_detection_yunet_2023mar.onnx \
+  --antispoof-model models/best_224.onnx \
+  --threshold 0.6
+```
+
+The demo uses YuNet for face detection and the trained antispoof model for liveness detection. Results show colored bounding boxes: **green** for "Real" faces (live_score ≥ threshold), **red** for "Spoof" faces. Default threshold is 0.5.
+
+### Training
+
+Train your own model:
+
+```bash
+python train.py --data-root Cropped_Dataset --save-dir models
+```
+
+**Expected dataset structure:**
+- `Cropped_Dataset/metas/labels/train_label.json`
+- `Cropped_Dataset/metas/labels/test_label.json`
+
+**Common options:**
+```bash
+python train.py \
+  --data-root Cropped_Dataset \
+  --save-dir models \
+  --epochs 50 \
+  --batch-size 64 \
+  --lr 1e-3 \
+  --weighted-sampler \
+  --pretrained
+```
+
+### Data Preparation
+
+Prepare your dataset by cropping faces:
+
+```bash
+python data_prep.py --orig_dir /path/to/dataset_root --crop_dir Cropped_Dataset
+```
+
+**Dataset requirements:**
+- Image files (`.jpg` or `.png`)
+- Bounding box files: `image.jpg` → `image_BB.txt` (format: `x y w h`)
+- Label JSON files: `metas/labels/train_label.json` and `metas/labels/test_label.json`
+
+**Options:**
+```bash
+python data_prep.py \
+  --orig_dir /path/to/dataset_root \
+  --crop_dir Cropped_Dataset \
+  --size 224 \
+  --bbox_inc 1.5 \
+  --spoof_types 0 1 2 3 7 8 9
+```
+
+### Export to ONNX
+
+Convert PyTorch checkpoint to ONNX:
+
+```bash
+python to_onnx.py --input model.pth --output model.onnx
+```
+
+**Options:**
+```bash
+python to_onnx.py \
+  --input model.pth \
+  --output model.onnx \
+  --model-name mobilenetv4_conv_small.e2400_r224_in1k \
+  --num-classes 3 \
+  --image-size 224
 ```
 
 ---
 
+## Model Performance
 
-## Pretrained Model
-
-The pretrained model achieves 99% recall on live (real) faces. The model was trained on a balanced dataset with aggressive augmentation and class-weighted sampling to handle the (3) class classification task.
+The pretrained model achieves **99% recall** on live (real) faces. Trained on a balanced dataset with aggressive augmentation and class-weighted sampling.
 
 | Class | Precision | Recall | F1-Score | Support |
 | :--- | :--- | :--- | :--- | :--- |
@@ -66,104 +159,33 @@ The pretrained model achieves 99% recall on live (real) faces. The model was tra
 
 ---
 
-## Usage
+## Features
 
-### Data preparation
+- **Backbone**: MobileNetV4 (feature extractor) with a 3-class classifier head
+- **Clean Architecture**: Organized codebase following clean architecture principles
+- **Export**: `to_onnx.py` exports a `.pth` checkpoint to a `.onnx` file
+- **Dataset prep**: `data_prep.py` crops faces using bounding boxes and produces a fixed-size dataset
 
-Use `data_prep.py` to crop faces and resize them to a fixed square size (default: 224x224).
+---
 
-![Data preparation overview](assets/data_prep.png)
+## Project Structure
 
-Step 1: Check the input folder
-
-The dataset folder should contain:
-
-- Image files (for example, `.jpg` or `.png`)
-- A bounding box sidecar text file next to each image, with the same name plus `_BB.txt`
-  - Example: `images/0001.jpg` and `images/0001_BB.txt`
-- Label JSON files under `metas/labels/`
-  - `metas/labels/train_label.json`
-  - `metas/labels/test_label.json`
-
-![Data preparation overview](assets/data_prep2.png)
-
-Step 2: Pick an output folder
-
-Choose a folder where the cropped images will be written (it will be created as needed).
-
-Step 3: Run the script
-
-```bash
-python data_prep.py --orig_dir /path/to/dataset_root --crop_dir Cropped_Dataset
 ```
-
-Step 4 (optional): Change size and crop expansion
-
-```bash
-python data_prep.py --orig_dir /path/to/dataset_root --crop_dir Cropped_Dataset --size 224 --bbox_inc 1.5
+src/
+├── core/                # Core logic and entities
+│   ├── labels.py        # LabelSpec and label handling
+│   └── models.py        # Model configuration and creation
+├── app/                 # Use cases and application logic
+│   ├── inference.py     # Face detection and antispoof inference
+│   └── training.py      # Model training and evaluation
+├── infra/               # External dependencies and implementations
+│   ├── data.py          # Data loading and transforms
+│   ├── preprocess.py    # Image preprocessing utilities
+│   ├── checkpoint.py    # Model checkpoint management
+│   ├── sampler.py       # Data sampling strategies
+│   ├── data_prep.py     # Dataset preparation
+│   └── export_onnx.py   # ONNX model export
 ```
-
-Step 5 (optional): Filter by label type codes (if the labels include them)
-
-```bash
-python data_prep.py --orig_dir /path/to/dataset_root --crop_dir Cropped_Dataset --spoof_types 0 1 2 3 7 8 9
-```
-
-Step 6: Verify the output
-
-- Cropped images should be inside `Cropped_Dataset/` with the same relative paths as the input images.
-- The label JSON files should be copied to `Cropped_Dataset/metas/labels/`.
-
-### Training
-
-Run training from the project root:
-
-```bash
-python train.py --data-root Cropped_Dataset --save-dir models
-```
-
-The defaults expect:
-
-- `Cropped_Dataset/metas/labels/train_label.json`
-- `Cropped_Dataset/metas/labels/test_label.json`
-
-### Export to ONNX
-
-Convert a PyTorch checkpoint to ONNX:
-
-```bash
-python to_onnx.py --input model.pth --output model.onnx
-```
-
-### Demo
-
-Run face detection and antispoof inference on images or webcam:
-
-**With an image:**
-
-```bash
-python demo.py --image path/to/image.jpg
-```
-
-**With webcam:**
-
-```bash
-python demo.py --camera
-```
-
-**Custom model paths:**
-
-```bash
-python demo.py --image path/to/image.jpg --face-model models/face_detection_yunet_2023mar.onnx --antispoof-model models/best_224.onnx
-```
-
-**Custom liveness threshold:**
-
-```bash
-python demo.py --camera --threshold 0.6
-```
-
-The demo uses YuNet for face detection and the trained antispoof model for liveness detection. Results are displayed with colored bounding boxes: green for "Real" faces (live_score ≥ threshold), red for "Spoof" faces. The default threshold is 0.5.
 
 ---
 
