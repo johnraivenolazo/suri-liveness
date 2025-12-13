@@ -139,7 +139,13 @@ python demo.py --camera
 python demo.py --image path/to/image.jpg --face-model models/face_detection_yunet_2023mar.onnx --antispoof-model models/best_224.onnx
 ```
 
-The demo uses YuNet for face detection and the trained antispoof model for liveness detection. Results are displayed with colored bounding boxes: green for "Real" faces, red for "Photo Attack" or "Video Attack".
+**Custom liveness threshold:**
+
+```bash
+python demo.py --camera --threshold 0.6
+```
+
+The demo uses YuNet for face detection and the trained antispoof model for liveness detection. Results are displayed with colored bounding boxes: green for "Real" faces (live_score ≥ threshold), red for "Spoof" faces. The default threshold is 0.5.
 
 ---
 
