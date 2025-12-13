@@ -25,11 +25,7 @@ def process_frame(
                 logits = session.run([output_name], {input_name: face_input})[0]
                 probs = softmax(logits[0])
                 live_score = float(probs[0])
-                print_score = float(probs[1])
-                replay_score = float(probs[2])
-                spoof_score = print_score + replay_score
                 is_real = live_score >= confidence_threshold
-                max_confidence = max(live_score, spoof_score)
 
                 status = "Real" if is_real else "Spoof"
                 label = f"{status}: {live_score:.2f}"

@@ -12,7 +12,7 @@ def make_weighted_sampler(labels: List[int]) -> torch.utils.data.WeightedRandomS
     counts = np.bincount(np.asarray(labels, dtype=np.int64))
     counts = np.clip(counts, 1, None)
     class_weights = 1.0 / counts
-    sample_weights = [float(class_weights[l]) for l in labels]
+    sample_weights = [float(class_weights[label_id]) for label_id in labels]
     return torch.utils.data.WeightedRandomSampler(
         sample_weights, len(sample_weights), replacement=True
     )

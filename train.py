@@ -159,7 +159,6 @@ def main(argv: Optional[list[str]] = None) -> int:
             num_workers=args.num_workers,
             pin_memory=True,
         )
-        shuffle = False
     else:
         train_loader = DataLoader(
             train_ds,
@@ -168,7 +167,6 @@ def main(argv: Optional[list[str]] = None) -> int:
             num_workers=args.num_workers,
             pin_memory=True,
         )
-        shuffle = True
 
     val_loader = DataLoader(
         val_ds,
