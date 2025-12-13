@@ -27,9 +27,9 @@ The pretrained model achieves 99% recall on live (real) faces. The model was tra
 
 | Class | Precision | Recall | F1-Score | Support |
 | :--- | :--- | :--- | :--- | :--- |
-| Live | 0.8252 | 0.9920 | 0.9009 | 19,923 |
-| Print | 0.9417 | 0.8316 | 0.8832 | 15,104 |
-| Replay | 0.8738 | 0.7386 | 0.8005 | 14,619 |
+| Real | 0.8252 | 0.9920 | 0.9009 | 19,923 |
+| Photo | 0.9417 | 0.8316 | 0.8832 | 15,104 |
+| Video | 0.8738 | 0.7386 | 0.8005 | 14,619 |
 | **Accuracy** | | | **0.8686** | 49,646 |
 | **Macro avg** | 0.8802 | 0.8541 | 0.8616 | 49,646 |
 | **Weighted avg** | 0.8749 | 0.8686 | 0.8660 | 49,646 |
