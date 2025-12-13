@@ -44,7 +44,7 @@ The pretrained model achieves 99% recall on live (real) faces. The model was tra
 
 Use `src/data_prep.py` to crop faces and resize them to a fixed square size (default: 224x224).
 
-![Data preparation overview](assets/data_prep.jfif)
+![Data preparation overview](assets/data_prep.png)
 
 Step 1: Check the input folder
 
