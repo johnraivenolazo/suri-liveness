@@ -117,6 +117,30 @@ cd src
 python to_onnx.py --input ../model.pth --output ../model.onnx
 ```
 
+### Demo
+
+Run face detection and antispoof inference on images or webcam:
+
+**With an image:**
+
+```bash
+python demo.py --image path/to/image.jpg
+```
+
+**With webcam:**
+
+```bash
+python demo.py --camera
+```
+
+**Custom model paths:**
+
+```bash
+python demo.py --image path/to/image.jpg --face-model models/face_detection_yunet_2023mar.onnx --antispoof-model models/best_224.onnx
+```
+
+The demo uses YuNet for face detection and the trained antispoof model for liveness detection. Results are displayed with colored bounding boxes: green for "Real" faces, red for "Photo Attack" or "Video Attack".
+
 ---
 
 ## License
