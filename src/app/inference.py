@@ -18,7 +18,7 @@ def process_frame(
         x, y, w, h = map(int, face[:4])
         confidence = face[-1]
 
-        if confidence > 0.5:
+        if confidence > 0.5 and w >= 60 and h >= 60:
             face_crop = frame[y : y + h, x : x + w]
             if face_crop.size > 0:
                 face_input = preprocess_face(face_crop)
