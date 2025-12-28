@@ -12,4 +12,5 @@ onnxruntime
 tqdm
 tensorboardX
 py-cpuinfo
-gputil
+GPUtil
+psutil

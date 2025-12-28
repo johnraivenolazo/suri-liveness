@@ -1,7 +1,7 @@
 import os
 import torch
 
-DATA_PATH = "./data"
+DATA_PATH = os.environ.get("DATA_PATH", "./data")
 
 
 def get_num_classes(spoof_categories):

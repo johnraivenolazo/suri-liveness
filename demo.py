@@ -5,6 +5,7 @@ from typing import List, Dict, Tuple, Optional
 from pathlib import Path
 import time
 import platform
+import sys
 try:
     import psutil
     HAS_PSUTIL = True
@@ -147,7 +148,8 @@ def infer(
             raise ValueError("Model output shape mismatch")
 
         return [logits[i] for i in range(len(face_crops))]
-    except Exception:
+    except Exception as e:
+        print(f"Inference error: {e}", file=sys.stderr)
         return []
 
 
@@ -344,6 +346,7 @@ if __name__ == "__main__":
     parser.add_argument("--margin", type=int, default=5)
     parser.add_argument("--detector_model", type=str, default=str(DETECTOR_MODEL))
     parser.add_argument("--liveness_model", type=str, default=str(LIVENESS_MODEL))
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose error logging")
 
     args = parser.parse_args()
 
@@ -406,11 +409,9 @@ if __name__ == "__main__":
                         face_crop = crop(frame_rgb, (x, y, x + w, y + h), args.bbox_expansion_factor)
                         face_crops.append(face_crop)
                         valid_faces.append((face, (int(x), int(y), int(w), int(h))))
-                    except Exception:
-                        continue
-
-                if face_crops:
-                    predictions = infer(
+                except Exception as e:
+                    if args.verbose:
+                        print(f"Warning: Failed to crop face at ({x},{y},{w},{h}): {e}", file=sys.stderr)
                         face_crops, liveness_session, input_name, args.model_img_size
                     )
 
@@ -516,6 +517,8 @@ if __name__ == "__main__":
     else:
         image = cv2.imread(args.image)
         if image is None:
+            print(f"Error: Could not load image from '{args.image}'", file=sys.stderr)
+            print("Please check that the file exists and is a valid image format.", file=sys.stderr)
             exit(1)
 
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -533,7 +536,9 @@ if __name__ == "__main__":
                 face_crop = crop(image_rgb, (x, y, x + w, y + h), args.bbox_expansion_factor)
                 face_crops.append(face_crop)
                 valid_faces.append((int(x), int(y), int(w), int(h)))
-            except Exception:
+            except Exception as e:
+                if args.verbose:
+                    print(f"Warning: Failed to crop face at ({x},{y},{w},{h}): {e}", file=sys.stderr)
                 continue
 
         if not face_crops:

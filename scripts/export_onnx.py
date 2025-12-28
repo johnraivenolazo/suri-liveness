@@ -14,7 +14,7 @@ from src.minifasv2.config import get_kernel
 
 
 def load_model_from_checkpoint(checkpoint_path, device, input_size=128, num_classes=2):
-    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
 
     if "model_state_dict" in checkpoint:
         state_dict = checkpoint["model_state_dict"]
