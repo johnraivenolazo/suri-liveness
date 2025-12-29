@@ -11,7 +11,7 @@ Anti-spoofing is texture-sensitive, so input quality directly affects output rel
 
 The model was trained on a specific preprocessing pipeline, so it expects inputs that match that pipeline.
 
-* **The 1.5x padding:** The preprocessing uses 1.5x padding (`--bbox_expansion_factor 1.5`) when cropping faces. Tight crops (just eyes/forehead) remove the context needed to tell a real head apart from a flat screen or paper. The padding provides the model enough "head space" to see the 3D structure.
+* **The 1.5x padding:** The preprocessing uses 1.5x padding (`--bbox_expansion_factor 1.5`) when cropping faces. Tight crops (Just eyes/Forehead) remove the context needed to tell a real head apart from a flat screen or paper. The padding provides the model enough "head space" to see the 3D structure.
 * **Resolution:** Input gets resized to 128×128, but the source face should be at least 64×64. If you upscale a tiny, blurry face, you'll lose the spoofing artifacts (like screen pixels) that the model looks for.
 
 ## 3. Pose & Occlusion
@@ -28,8 +28,8 @@ The model was trained on a specific preprocessing pipeline, so it expects inputs
 
 The default threshold is balanced for general use (FPR < 2%). Security is a trade-off:
 
-* **High-security:** If you can't afford any spoofs getting through, bump the threshold (e.g., 0.5 → 0.8). This will also increase false rejects for real users.
-* **High-convenience:** If you want a smoother experience and can tolerate minor risks, lower thresholds work fine.
+* **High-security:** If you can't afford any spoofs getting through, you can bump the threshold (e.g., 0.5 → 0.8). This will also increase false rejects for real users.
+* **High-convenience:** If you want a smoother experience and can tolerate minor risks, lower thresholds should work fine.
 
 ## Implementation Example
 

@@ -13,7 +13,7 @@
 
 A lightweight face anti-spoofing model that distinguishes real faces from spoofing attempts (printed photos, screen displays, etc.). Used in [**SURI**](https://github.com/johnraivenolazo/suri), an AI attendance system.
 
-This repo contains the training pipeline, pretrained weights, and ONNX export. Standalone repository for training and optimization.
+This repo contains the training pipeline, pre-trained weights, and ONNX export. Standalone repository for training and optimization.
 
 ---
 
@@ -128,7 +128,7 @@ pip install -r requirements.txt
 > **Python Version:** This project requires **Python 3.8.0 or higher**.
 
 ### Compatibility Note: Python 3.7.x
-Tested on **Python 3.7.16** and confirmed that they are **not compatible**. Attempting to install dependencies on Python 3.7.x will result in a `subprocess-exited-with-error` during the `pip` installation of backend dependencies.
+Tested on **Python 3.7.16** and was confirmed that they are **not compatible**. Attempting to install dependencies on Python 3.7.x will result in a `subprocess-exited-with-error` during the `pip` installation of backend dependencies.
 
 **Error Example:**
 ```text

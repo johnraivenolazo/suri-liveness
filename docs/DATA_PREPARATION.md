@@ -1,6 +1,6 @@
 # Data Preparation
 
-This doc explains the preprocessing decisions in `scripts/prepare_data.py`.
+This documentation explains the preprocessing decisions in `scripts/prepare_data.py`.
 
 ---
 
